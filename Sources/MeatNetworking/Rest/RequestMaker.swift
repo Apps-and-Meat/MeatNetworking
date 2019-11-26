@@ -82,21 +82,19 @@ public class RequestMaker {
         // HTTP Method
         urlRequest.httpMethod = request.method.rawValue
 
-        // Common Headers
-        request.configuration.defaultHeaderFields.forEach {
+        // Headers
+        request.headerFields.allValues.forEach {
             urlRequest.setValue($0.value, forHTTPHeaderField: $0.key)
         }
 
-        // Extra Headers
-        for extraHeader in request.extraHeaders {
-            urlRequest.setValue(extraHeader.value, forHTTPHeaderField: extraHeader.key)
-        }
 
-
-        if let parameters = request.parameters {
+        if let parameters = request.parameters, request.method.shouldAddHTTPBody() {
             // Parameters
-            if request.method.shouldAddHTTPBody() {
+            switch request.headerFields.contentType {
+            case .json:
                 urlRequest.httpBody = try JSONSerialization.data(withJSONObject: parameters, options: [])
+            case .form:
+                urlRequest.httpBody = parameters.percentEscaped().data(using: .utf8)
             }
         }
 

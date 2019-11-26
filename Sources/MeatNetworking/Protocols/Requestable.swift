@@ -17,7 +17,7 @@ public protocol Requestable {
     var path: URLPath { get }
     var parameters: Parameters? { get }
     var credentials: UserNetworkCredentials? { get }
-    var extraHeaders: HTTPHeaderType { get }
+    var headerFields: HeaderFields { get }
     var logOutIfUnauthorized: Bool { get }
     
     func setIsRunning(_ running: Bool)

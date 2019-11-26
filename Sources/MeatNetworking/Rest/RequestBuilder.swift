@@ -20,7 +20,7 @@ public protocol RequestableBuilder: Requestable {
 }
 
 open class RequestBuilder: RequestableBuilder {
-
+    
     public let configuration: NetworkingConfiguration
     public let createDate = Date().hashValue
     public var currentRequest: URLSessionDataTask?
@@ -39,7 +39,7 @@ open class RequestBuilder: RequestableBuilder {
     public var path: URLPath = EmptyURLPath()
     public var parameters: Parameters? = nil
     public var credentials: UserNetworkCredentials? = nil
-    public var extraHeaders: HTTPHeaderType = [:]
+    public lazy var headerFields: HeaderFields = configuration.defaultHeaderFields
     public var logOutIfUnauthorized: Bool = true
     private var onFinished: ((RequestBuilder) -> Void)?
 
@@ -53,12 +53,14 @@ open class RequestBuilder: RequestableBuilder {
     }
 
     public func headers(_ headers: HTTPHeaderType) -> RequestableBuilder {
-        extraHeaders = extraHeaders.union(headers)
+        headerFields.custom.merge(headers) { old, new in
+            return new
+        }
         return self
     }
 
     public func appendHeader(key: String, value: String?) -> RequestableBuilder {
-        self.extraHeaders[key] = value
+        self.headerFields.custom[key] = value
         return self
     }
 

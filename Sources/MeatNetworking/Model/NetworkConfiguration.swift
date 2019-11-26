@@ -10,8 +10,7 @@ import Foundation
 
 public struct NetworkingConfiguration {
     public let baseURL: String
-    public var defaultHeaderFields: [String: String] = ["Content-Type": "application/json",
-                                                        "Accept": "application/json"]
+    public var defaultHeaderFields = HeaderFields()
     public let defaultQueryParameters: [URLQueryItem]
     public let defaultUserCredentials: () -> UserNetworkCredentials?
     public let defaultUnathorizedAccessHandler: (() -> Void)?
@@ -26,7 +25,7 @@ public struct NetworkingConfiguration {
                 defaultUserCredentials: @escaping () -> UserNetworkCredentials?) {
 
         self.baseURL = baseURL
-        self.defaultHeaderFields.merge(headerFields, uniquingKeysWith: { $1 })
+        self.defaultHeaderFields.custom = headerFields
         self.defaultQueryParameters = queryParameters
         self.defaultUnathorizedAccessHandler = defaultUnathorizedAccessHandler
         self.defaultUserCredentials = defaultUserCredentials
