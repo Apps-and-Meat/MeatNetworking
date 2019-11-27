@@ -9,6 +9,7 @@
 import Foundation
 
 public class RequestMaker {
+    
     static func performRequest<T: Decodable>(request: Requestable, expecting: T.Type) throws -> T {
         
         let response: (response: HTTPURLResponse?, data: Data?) = try self.performRequest(request: request)
@@ -38,7 +39,7 @@ public class RequestMaker {
         }
     }
     
-    static func performRequest(request: Requestable) throws -> (HTTPURLResponse?, Data?) {
+    public static func performRequest(request: Requestable) throws -> (HTTPURLResponse?, Data?) {
         var sessionData: Data?
         var sessionError: Error?
         var sessionResponse: HTTPURLResponse?

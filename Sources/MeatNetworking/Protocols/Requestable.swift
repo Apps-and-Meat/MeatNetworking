@@ -35,4 +35,8 @@ public extension Requestable {
     func run<T: Decodable>(expecting: T.Type) throws -> T {
         return try RequestMaker.performRequest(request: self, expecting: expecting)
     }
+    
+    func runRaw() throws -> (HTTPURLResponse?, Data?) {
+        return try RequestMaker.performRequest(request: self)
+    }
 }
