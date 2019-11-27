@@ -9,12 +9,12 @@ import Foundation
 
 public struct HeaderFields {
     
-    var contentType: DataType = .json
-    var accept: DataType = .json
-    
-    var custom = HTTPHeaderType()
-    
-    var allValues: HTTPHeaderType {
+    public var contentType: DataType = .json
+    public var accept: DataType = .json
+
+    public var custom = HTTPHeaderType()
+
+    public var allValues: HTTPHeaderType {
         var values: HTTPHeaderType = [
             "Content-Type": contentType.rawValue,
             "Accept": accept.rawValue
@@ -26,24 +26,7 @@ public struct HeaderFields {
     }
 }
 
-enum HeaderFieldKey: CustomStringConvertible {
-    case contentType
-    case accept
-    case other(String)
-    
-    var description: String {
-        switch self {
-        case .contentType:
-            return "Content-Type"
-        case .accept:
-            return "Accept"
-        case .other(let string):
-            return string
-        }
-    }
-}
-
-enum DataType: String, Codable {
+public enum DataType: String, Codable {
     case json = "application/json"
     case form = "application/x-www-form-urlencoded"
 }
