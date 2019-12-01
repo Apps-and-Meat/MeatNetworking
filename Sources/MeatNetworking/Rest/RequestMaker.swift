@@ -34,7 +34,7 @@ public class RequestMaker {
         do {
             return try request.configuration.decoder.decode(T.self, from: validatedSessionData)
         } catch {
-            print(error.localizedDescription)
+            print(error)
             throw error as? FutureError ?? FutureError.dataDecodingError
         }
     }
