@@ -60,27 +60,6 @@ class DogApiClient: APIClient {
         }
         
     }
-    
-    //func getBreedData(for breed: Breed, onCompletion: @escaping (Result<Bool, Error>) -> Void) {
-    //    getBreedImageUrl(named: breed.name) { result in
-    //        switch result {
-    //        case let .success(url):
-    //            getBreedImage(url: url) { imageResult in
-    //                switch imageResult {
-    //                case let .success(imageData):
-    //                    breed.saveImageData(data: imageData)
-    //                    onCompletion(.success(true))
-    //                case let .failure(error):
-    //                    onCompletion(.failure(error))
-    //                }
-    //            }
-    //        case let .failure(error):
-    //            onCompletion(.failure(error))
-    //        }
-    //    }
-    //}
-    
-    
 }
 
 struct BreedsResponse: Decodable {
