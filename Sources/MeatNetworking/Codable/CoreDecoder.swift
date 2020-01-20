@@ -12,10 +12,7 @@ public class CoreDecoder: JSONDecoder {
     override public init() {
         super.init()
         self.dateDecodingStrategy = .formatted(.networkFormatter)
-        self.keyDecodingStrategy = .custom { keys -> CodingKey in
-            let key = keys.last!.stringValue.lowerCaseFirstLetter()
-            return CoreDecoderKey(stringValue: key)!
-        }
+        self.keyDecodingStrategy = .useDefaultKeys
     }
 
     public override func decode<T>(_ type: T.Type, from data: Data) throws -> T where T : Decodable {
@@ -47,12 +44,6 @@ extension DateFormatter {
     static let networkFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZZZZZ"
-        return formatter
-    }()
-
-    public static let regionDataMessageFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
         return formatter
     }()
 }
