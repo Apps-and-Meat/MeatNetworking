@@ -7,15 +7,15 @@
 
 import Foundation
 
-public struct HeaderFields {
+public struct HeaderFieldList {
     
     public var contentType: DataType = .json
     public var accept: DataType = .json
 
-    public var custom = HTTPHeaderType()
+    public var custom = HTTPHeaderFields()
 
-    public var allValues: HTTPHeaderType {
-        var values: HTTPHeaderType = [
+    public var allFields: HTTPHeaderFields {
+        var values: HTTPHeaderFields = [
             "Content-Type": contentType.rawValue,
             "Accept": accept.rawValue
         ]

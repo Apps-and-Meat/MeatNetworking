@@ -8,7 +8,7 @@
 
 import Foundation
 
-public typealias HTTPHeaderType = [String: String?]
+public typealias HTTPHeaderFields = [String: String?]
 public typealias Parameters = [String : Any]
 
 public protocol Requestable {
@@ -16,8 +16,8 @@ public protocol Requestable {
     var method: HTTPMethod { get }
     var path: URLPath { get }
     var parameters: Parameters? { get }
-    var credentials: UserNetworkCredentials? { get }
-    var headerFields: HeaderFields { get }
+    var authentication: Authentication { get }
+    var headerFields: HeaderFieldList { get }
     var logOutIfUnauthorized: Bool { get }
     
     func setIsRunning(_ running: Bool)
