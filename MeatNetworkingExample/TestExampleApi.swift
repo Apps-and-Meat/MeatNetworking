@@ -10,12 +10,12 @@ import UIKit
 import MeatNetworking
 
 var apiClient: DogApiClient = {
-    APIClient.configuration = NetworkingConfiguration(baseURL: "https://dog.ceo/api",
+    let configuration = NetworkingConfiguration(baseURL: "https://dog.ceo/api",
                                                       headerFields: [:],
                                                       queryParameters: [],
                                                       defaultUnathorizedAccessHandler: nil,
                                                       defaultUserCredentials: { nil })
-    return DogApiClient()
+    return DogApiClient(configuration: configuration)
 }()
 
 
