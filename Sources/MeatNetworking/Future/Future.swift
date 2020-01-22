@@ -72,8 +72,8 @@ public class Future<T> {
         }
     }
 
-    public func mapToVoid() -> FutureVoid {
-        return FutureVoid {
+    public func mapToVoid() -> Future<Void> {
+        return Future<Void> {
             do {
                 let result = try self.request()
                 DispatchQueue.main.async {

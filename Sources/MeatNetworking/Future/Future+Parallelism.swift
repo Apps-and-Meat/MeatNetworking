@@ -10,18 +10,38 @@ import Foundation
 
 public extension Future {
     func parallel<E>(with future: Future<E>) -> Future<(T, E)> {
-        return FutureHelper.paralleling(futureA: self, futureB: future)
+        return Self.paralleling(futureA: self, futureB: future)
     }
-    func parallel(with future: FutureVoid) -> Future<T> {
-        return FutureHelper.paralleling(futureA: self, futureB: future)
-    }
-}
+    
+    private static func paralleling<A, B>(futureA: Future<A>, futureB: Future<B>) -> Future<(A, B)> {
 
-public extension FutureVoid {
-    func parallel<E>(with future: Future<E>) -> Future<E> {
-        return FutureHelper.paralleling(futureA: future, futureB: self)
-    }
-    func parallel(with future: FutureVoid) -> FutureVoid {
-        return FutureHelper.paralleling(futureA: self, futureB: future)
+        return Future<(A,B)> {
+            var a: GetResult<A> = { throw FutureError.cancelled}
+            var b: GetResult<B> = { throw FutureError.cancelled}
+
+            let group = DispatchGroup()
+            group.enter()
+            futureA.run { getA in
+                do {
+                    let aResult = try getA()
+                    a = { return aResult }
+                } catch {
+                    a = { throw error }
+                }
+                group.leave()
+            }
+            group.enter()
+            futureB.run { getB in
+                do {
+                    let bResult = try getB()
+                    b = { return bResult }
+                } catch {
+                    b = { throw error }
+                }
+                group.leave()
+            }
+            group.wait()
+            return (try a(), try b())
+        }
     }
 }
