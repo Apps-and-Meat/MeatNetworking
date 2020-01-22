@@ -10,7 +10,7 @@ import Foundation
 
 open class APIClient {
     
-    public static var configuration: NetworkingConfiguration!
+    public var configuration: NetworkingConfiguration
     private var requests: [RequestBuilder] = []
     
     open var isCancelled: Bool = false
@@ -22,7 +22,9 @@ open class APIClient {
     private let requestAccessQueue = DispatchQueue.init(label: "requestAccess")
     
     
-    public init() {}
+    public init(configuration: NetworkingConfiguration) {
+        self.configuration = configuration
+    }
     
     public func method(_ method: HTTPMethod) -> RequestBuilder {
         isCancelled = false
@@ -41,7 +43,7 @@ open class APIClient {
     }
     
     private func newBuilder() -> RequestBuilder {
-        let newBuilder = RequestBuilder(configuration: APIClient.configuration, onFinished: self.didFinishRequest)
+        let newBuilder = RequestBuilder(configuration: configuration, onFinished: self.didFinishRequest)
         requestAccessQueue.async {
             self.requests.append(newBuilder)
             
