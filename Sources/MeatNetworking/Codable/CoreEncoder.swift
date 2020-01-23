@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import MeatFutures
 
 public class CoreEncoder: JSONEncoder {
 

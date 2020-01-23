@@ -18,9 +18,9 @@ public struct NetworkingConfiguration {
     public var decoder: JSONDecoder = CoreDecoder()
 
     public init(baseURL: String,
-                headerFields: [String: String],
-                queryParameters: [URLQueryItem],
-                defaultUnathorizedAccessHandler: (() -> Void)?) {
+                headerFields: [String: String] = [:],
+                queryParameters: [URLQueryItem] = [],
+                defaultUnathorizedAccessHandler: (() -> Void)? = nil) {
 
         self.baseURL = baseURL
         self.defaultHeaderFields.custom = headerFields
