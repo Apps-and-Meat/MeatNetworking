@@ -13,8 +13,8 @@ public protocol RequestableBuilder: Requestable {
     func path(_ path: URLPath) -> RequestableBuilder
     func parameters(_ parameters: Parameters) -> RequestableBuilder
     func parameters<T: Encodable>(_ parameters: T) -> RequestableBuilder
-    func credentials(_ credentials: UserNetworkCredentials) -> RequestableBuilder
-    func headers(_ headers: HTTPHeaderType) -> RequestableBuilder
+    func authentication(_ authentication: Authentication) -> RequestableBuilder
+    func headers(_ headers: HTTPHeaderFields) -> RequestableBuilder
     func appendHeader(key: String, value: String?) -> RequestableBuilder
     func disableAuthorizationLogout() -> RequestableBuilder
 }
@@ -38,21 +38,22 @@ open class RequestBuilder: RequestableBuilder {
     public var method: HTTPMethod = .get
     public var path: URLPath = EmptyURLPath()
     public var parameters: Parameters? = nil
-    public var credentials: UserNetworkCredentials? = nil
-    public lazy var headerFields: HeaderFields = configuration.defaultHeaderFields
+    public var authentication: Authentication
+    public var headerFields: HeaderFieldList
     public var logOutIfUnauthorized: Bool = true
+    
     private var onFinished: ((RequestBuilder) -> Void)?
 
-    init(configuration: NetworkingConfiguration, onFinished: @escaping (RequestBuilder) -> Void) {
+    init(configuration: NetworkingConfiguration,
+         authentication: Authentication,
+         onFinished: @escaping (RequestBuilder) -> Void) {
         self.configuration = configuration
+        self.authentication = authentication
         self.onFinished = onFinished
+        self.headerFields = configuration.defaultHeaderFields
     }
 
-    init(configuration: NetworkingConfiguration) {
-        self.configuration = configuration
-    }
-
-    public func headers(_ headers: HTTPHeaderType) -> RequestableBuilder {
+    public func headers(_ headers: HTTPHeaderFields) -> RequestableBuilder {
         headerFields.custom.merge(headers) { old, new in
             return new
         }
@@ -79,8 +80,8 @@ open class RequestBuilder: RequestableBuilder {
         return self
     }
 
-    public func credentials(_ credentials: UserNetworkCredentials) -> RequestableBuilder {
-        self.credentials = credentials
+    public func authentication(_ authentication: Authentication) -> RequestableBuilder {
+        self.authentication = authentication
         return self
     }
 

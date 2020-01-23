@@ -9,7 +9,7 @@
 import Foundation
 
 open class APIClient {
-    
+    public var authentication: Authentication = .none
     public var configuration: NetworkingConfiguration
     private var requests: [RequestBuilder] = []
     
@@ -43,10 +43,11 @@ open class APIClient {
     }
     
     private func newBuilder() -> RequestBuilder {
-        let newBuilder = RequestBuilder(configuration: configuration, onFinished: self.didFinishRequest)
+        let newBuilder = RequestBuilder(configuration: configuration,
+                                        authentication: authentication,
+                                        onFinished: self.didFinishRequest)
         requestAccessQueue.async {
             self.requests.append(newBuilder)
-            
         }
         return newBuilder
     }

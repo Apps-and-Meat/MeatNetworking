@@ -44,7 +44,7 @@ public class RequestMaker {
         var sessionError: Error?
         var sessionResponse: HTTPURLResponse?
         let group = DispatchGroup()
-        let urlReq = try urlRequest(from: request)
+        let urlReq = try request.build()
         group.enter()
         let task = URLSession.shared.dataTask(with: urlReq) { data, response, error in
             sessionData = data
@@ -78,28 +78,53 @@ public class RequestMaker {
         }
         return (sessionResponse, sessionData)
     }
-    
-    private static func urlRequest(from request: Requestable) throws -> URLRequest {
-        var url = request.configuration.getURL(path: request.path, credentials: request.credentials)
         
-        if request.method.shouldAppendQueryString() {
-            url = url.appendingQueryParameters(request.parameters)
+    private static func storeCookie(from response: HTTPURLResponse?) {
+        guard   let url = response?.url,
+            let headerFields = response?.allHeaderFields as? [String : String] else {
+                return
+        }
+        
+        if let cookie = HTTPCookie.cookies(withResponseHeaderFields: headerFields, for: url).first {
+            print("Storing cookie for \(url.path)")
+            HTTPCookieStorage.shared.setCookie(cookie)
+        }
+    }
+}
+
+private extension Requestable {
+    func build() throws ->  URLRequest {
+        
+        guard var url = URL(string: configuration.baseURL)?
+            .appendingPathComponent(path.toString)
+            .appendingQueryParameters(configuration.defaultQueryParameters)
+            else {
+                throw FutureError.badRequest
+        }
+        
+        if method.shouldAppendQueryString() {
+            url.appendQueryParameters(parameters)
         }
         
         var urlRequest = URLRequest(url: url)
         
+        if case .none = authentication, path.requiresAuthentication {
+            throw UnauthorizedError()
+        }
+        
         // HTTP Method
-        urlRequest.httpMethod = request.method.rawValue
+        urlRequest.addAuthentication(authentication)
+        urlRequest.httpMethod = method.rawValue
         
         // Headers
-        request.headerFields.allValues.forEach {
+        headerFields.allFields.forEach {
             urlRequest.setValue($0.value, forHTTPHeaderField: $0.key)
         }
         
         
-        if let parameters = request.parameters, request.method.shouldAddHTTPBody() {
+        if let parameters = parameters, method.shouldAddHTTPBody() {
             // Parameters
-            switch request.headerFields.contentType {
+            switch headerFields.contentType {
             case .json:
                 urlRequest.httpBody = try JSONSerialization.data(withJSONObject: parameters, options: [])
             case .form:
@@ -109,16 +134,19 @@ public class RequestMaker {
         
         return urlRequest
     }
-    
-    private static func storeCookie(from response: HTTPURLResponse?) {
-        guard   let url = response?.url,
-                let headerFields = response?.allHeaderFields as? [String : String] else {
-                return
-        }
-        
-        if let cookie = HTTPCookie.cookies(withResponseHeaderFields: headerFields, for: url).first {
-            print("Storing cookie for \(url.path)")
-            HTTPCookieStorage.shared.setCookie(cookie)
+}
+
+private extension URLRequest {
+    mutating func addAuthentication(_ auth: Authentication) {
+        switch auth {
+        case .custom(let headerFields):
+            headerFields.forEach {
+                setValue($0.value, forHTTPHeaderField: $0.key)
+            }
+        case .OAuth2(let token):
+            setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        case .none:
+            break
         }
     }
 }

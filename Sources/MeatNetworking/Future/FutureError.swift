@@ -10,6 +10,7 @@ import Foundation
 
 public enum FutureError: Error, Equatable {
     case unauthorized
+    case badRequest
     case dataDecodingError
     case noData
     case warning(String, Data?)
