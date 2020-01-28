@@ -29,7 +29,7 @@ public extension URL {
     }
 
     func appendingQueryParameters(_ parameters: [URLQueryItem]?) -> URL {
-        guard let parameters = parameters else { return self }
+        guard let parameters = parameters, !parameters.isEmpty else { return self }
         var urlComponents = URLComponents(url: self, resolvingAgainstBaseURL: true)!
         var items = urlComponents.queryItems ?? []
         items += parameters
