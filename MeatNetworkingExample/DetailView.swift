@@ -7,24 +7,56 @@
 
 import SwiftUI
 import UIKit
+import Combine
+
+class DetailViewModel: ObservableObject {
+    var cancellable = Set<AnyCancellable>()
+    
+    @Published var breedName: String
+    
+    @Published var image: UIImage?
+    @Published var error: Error?
+    @Published var hasError: Bool = false
+    
+    init(breedName: String) {
+        self.breedName = breedName
+        
+        $error
+            .receive(on: RunLoop.main)
+            .map { $0 != nil }
+            .assign(to: \.hasError, on: self)
+            .store(in: &cancellable)
+    }
+    
+    func getImage() {
+        apiClient.getBreedImage(breedName: breedName)
+            .receive(on: RunLoop.main)
+            .sinkResult {
+                do {
+                    self.image = try $0.get()
+                } catch {
+                    self.error = error
+                }
+            }
+            .store(in: &cancellable)
+    }
+}
 
 struct DetailView: View {
-    var breedName: String
-    
-    @State var image: UIImage?
-    @State var hasError: Bool = false
+    @ObservedObject var viewModel: DetailViewModel
     
     var body: some View {
         VStack {
-            Text(breedName)
+            Text(viewModel.breedName.capitalized)
                 .font(.largeTitle)
                 .padding()
             
-            if image != nil {
-                Image(uiImage: image!)
+            if viewModel.image != nil {
+                Image(uiImage: viewModel.image!)
                     .resizable()
                     .clipShape(Circle())
                     .frame(width: 200, height: 200, alignment: .center)
+                    .shadow(radius: 10)
                     .padding()
                 
             } else {
@@ -33,22 +65,17 @@ struct DetailView: View {
                     ActivityIndicator(isAnimating: true)
                 }
             }
-        }
-        .onAppear(perform: self.viewDidLoad)
-        .alert(isPresented: $hasError) {
-            Alert(title: Text("Something went wrong"), message: nil, dismissButton: .default(Text("Dam it!")))
+        }.onAppear(perform: viewModel.getImage)
+        .alert(isPresented: $viewModel.hasError) {
+            Alert(title: Text("Something went wrong"), message: Text(viewModel.error!.localizedDescription), dismissButton: .default(Text("Dam it!")))
         }
     }
     
-    func viewDidLoad() {
-        apiClient.getBreedImage(breedName: breedName).run { response in
-            do {
-                self.image = try response()
-            } catch {
-                self.hasError = true
-            }
-        }
+    init(breedName: String) {
+        self.viewModel = DetailViewModel(breedName: breedName)
     }
+    
+    
 }
 
 struct ActivityIndicator: UIViewRepresentable {

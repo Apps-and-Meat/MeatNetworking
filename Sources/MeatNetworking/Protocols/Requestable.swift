@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import Combine
 
 public typealias HTTPHeaderFields = [String: String?]
 public typealias Parameters = [String : Any]
@@ -38,5 +39,45 @@ public extension Requestable {
     
     func runRaw() throws -> (HTTPURLResponse?, Data?) {
         return try RequestMaker.performRequest(request: self)
+    }
+}
+
+public extension Requestable {
+
+    func toFuture() -> Future<Void, Error> {
+        Future<Void, Error> { promise in
+            DispatchQueue.main.async {
+                do {
+                    _ = try self.run(expecting: VoidResult.self)
+                    promise(.success(()))
+                } catch {
+                    promise(.failure(error))
+                }
+            }
+        }
+    }
+
+    func toFuture<T: Decodable>(expecting: T.Type) -> Future<T, Error> {
+        Future<T, Error> { promise in
+            DispatchQueue.main.async {
+                do {
+                    try promise(.success(self.run(expecting: expecting)))
+                } catch {
+                    promise(.failure(error))
+                }
+            }
+        }
+    }
+    
+    func toFutureRaw() -> Future<(HTTPURLResponse?, Data?), Error> {
+        Future<(HTTPURLResponse?, Data?), Error> { promise in
+            DispatchQueue.main.async {
+                do {
+                    try promise(.success(self.runRaw()))
+                } catch {
+                    promise(.failure(error))
+                }
+            }
+        }
     }
 }
