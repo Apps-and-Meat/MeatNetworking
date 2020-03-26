@@ -10,16 +10,16 @@ let package = Package(
         .iOS(.v13)
     ],
     products: [
-        
+
         // Products define the executables and libraries produced by a package, and make them visible to other packages.
         .library(
             name: "MeatNetworking",
-            targets: ["MeatNetworking"]),
+            targets: ["MeatNetworking"])
     ],
     dependencies: [
-        
+
         // Dependencies declare other packages that this package depends on.
-        .package(url: "https://github.com/Apps-and-Meat/MeatFutures.git", from: Version(0, 1, 0)),
+        .package(url: "ssh://tfs.ia.corp.svea.com:22/SveaBankCollection/Payd%20-%20The%20rest%20is%20easy/_git/ios-meat-futures", from: Version(0, 1, 0))
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
@@ -29,6 +29,6 @@ let package = Package(
             dependencies: ["MeatFutures"]),
         .testTarget(
             name: "MeatNetworkingTests",
-            dependencies: ["MeatNetworking"]),
+            dependencies: ["MeatNetworking"])
     ]
 )
