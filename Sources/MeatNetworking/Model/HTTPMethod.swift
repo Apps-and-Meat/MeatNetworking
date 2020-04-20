@@ -29,7 +29,7 @@ public enum HTTPMethod : String {
     case connect
 
     func shouldAddHTTPBody() -> Bool {
-        return self == .put || self == .post
+        return self == .put || self == .post || self == .patch
     }
 
     func shouldAppendQueryString() -> Bool {
