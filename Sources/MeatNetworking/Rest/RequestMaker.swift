@@ -46,6 +46,7 @@ public class RequestMaker {
         var sessionResponse: HTTPURLResponse?
         let group = DispatchGroup()
         let urlReq = try request.build()
+        
         group.enter()
         let task = URLSession.shared.dataTask(with: urlReq) { data, response, error in
             sessionData = data
@@ -53,32 +54,48 @@ public class RequestMaker {
             sessionResponse = response as? HTTPURLResponse
             group.leave()
         }
+        
         task.resume()
         request.setIsRunning(true)
         group.wait()
         request.setIsRunning(false)
         
-        if let error = sessionError {
-            
-            guard error._code != URLError.cancelled.rawValue else {
-                throw FutureError.cancelled
-            }
-            
-            if let unauthorizedError = UnauthorizedError(code: sessionResponse?.statusCode) {
-                if request.logOutIfUnauthorized {
-                    request.configuration.defaultUnathorizedAccessHandler?()
-                }
-                throw unauthorizedError
-            }
-            
-            if let warning = sessionResponse?.getWarning() {
-                throw FutureError.warning(warning, sessionData)
-            }
-            
-            throw error
+        if let networkError = NetworkingError(error: sessionError, response: sessionResponse, data: sessionData) {
+            throw networkError
         }
+        
         return (sessionResponse, sessionData)
     }
+    
+//    private static func checkForError(error: Error?, response: HTTPURLResponse?, data: Data?) throws {
+//        
+//        
+//        
+//        let responseStatus = response?.status
+//        
+//        
+//        
+//        
+//        if let error = error {
+//            
+//            guard error._code != URLError.cancelled.rawValue else {
+//                throw FutureError.cancelled
+//            }
+//            
+//            if let unauthorizedError = UnauthorizedError(code: sessionResponse?.statusCode) {
+//                if request.logOutIfUnauthorized {
+//                    request.configuration.defaultUnathorizedAccessHandler?()
+//                }
+//                throw unauthorizedError
+//            }
+//            
+//            if let warning = sessionResponse?.getWarning() {
+//                throw FutureError.warning(warning, sessionData)
+//            }
+//            
+//            throw error
+//        }
+//    }
         
     private static func storeCookie(from response: HTTPURLResponse?) {
         guard   let url = response?.url,
@@ -110,7 +127,7 @@ private extension Requestable {
         var urlRequest = URLRequest(url: url)
         
         if case .none = authentication, path.requiresAuthentication {
-            throw UnauthorizedError()
+            throw NetworkingError.unauthorized
         }
         
         // HTTP Method

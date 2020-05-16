@@ -9,16 +9,17 @@
 import Foundation
 
 public struct NetworkingConfiguration {
-    public let baseURL: String
+
+    public var baseURL: String
     public var defaultHeaderFields = HeaderFieldList()
-    public let defaultQueryParameters: [URLQueryItem]
-    public let defaultUnathorizedAccessHandler: (() -> Void)?
+    public var defaultQueryParameters: [URLQueryItem]
+    public var defaultUnathorizedAccessHandler: (() -> Void)?
 
     public var encoder: JSONEncoder = CoreEncoder()
     public var decoder: JSONDecoder = CoreDecoder()
 
     public init(baseURL: String,
-                headerFields: [String: String] = [:],
+                headerFields: HTTPHeaderFields = [:],
                 queryParameters: [URLQueryItem] = [],
                 defaultUnathorizedAccessHandler: (() -> Void)? = nil) {
 

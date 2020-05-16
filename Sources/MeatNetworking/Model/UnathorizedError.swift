@@ -8,15 +8,15 @@
 
 import Foundation
 
-public enum UnauthorizedError: Int, Error {
-    case unauthorized = 401
-
-    public init() {
-        self = .unauthorized
-    }
-
-    init?(code: Int?) {
-        guard let code = code else { return nil }
-        self.init(rawValue: code)
-    }
-}
+//public enum UnauthorizedError: Int, Error {
+//    case unauthorized = 401
+//
+//    public init() {
+//        self = .unauthorized
+//    }
+//
+//    init?(code: Int?) {
+//        guard let code = code else { return nil }
+//        self.init(rawValue: code)
+//    }
+//}
