@@ -24,7 +24,7 @@ public class RequestMaker {
         
         // Check if we have any sessionData else throw nodata error
         guard let validatedSessionData = response.data else {
-            throw FutureError.noData
+            throw NetworkingError.notFound
         }
         
         // If raw Data expected just return sessionData
@@ -36,7 +36,7 @@ public class RequestMaker {
             return try request.configuration.decoder.decode(T.self, from: validatedSessionData)
         } catch {
             print(error)
-            throw error as? FutureError ?? FutureError.dataDecodingError
+            throw NetworkingError(underlyingError: error, data: validatedSessionData)
         }
     }
     
@@ -61,42 +61,15 @@ public class RequestMaker {
         request.setIsRunning(false)
         
         if let networkError = NetworkingError(error: sessionError, response: sessionResponse, data: sessionData) {
+            if request.logOutIfUnauthorized, networkError.isUnauthorized {
+                request.configuration.defaultUnathorizedAccessHandler?()
+            }
             throw networkError
         }
         
         return (sessionResponse, sessionData)
     }
     
-//    private static func checkForError(error: Error?, response: HTTPURLResponse?, data: Data?) throws {
-//        
-//        
-//        
-//        let responseStatus = response?.status
-//        
-//        
-//        
-//        
-//        if let error = error {
-//            
-//            guard error._code != URLError.cancelled.rawValue else {
-//                throw FutureError.cancelled
-//            }
-//            
-//            if let unauthorizedError = UnauthorizedError(code: sessionResponse?.statusCode) {
-//                if request.logOutIfUnauthorized {
-//                    request.configuration.defaultUnathorizedAccessHandler?()
-//                }
-//                throw unauthorizedError
-//            }
-//            
-//            if let warning = sessionResponse?.getWarning() {
-//                throw FutureError.warning(warning, sessionData)
-//            }
-//            
-//            throw error
-//        }
-//    }
-        
     private static func storeCookie(from response: HTTPURLResponse?) {
         guard   let url = response?.url,
             let headerFields = response?.allHeaderFields as? [String : String] else {

@@ -34,8 +34,18 @@ struct NetworkingError: Error {
         self.data = nil
     }
     
+    init(underlyingError: Error, data: Data?) {
+        self.underlyingError = underlyingError
+        self.statusCode = nil
+        self.data = data
+    }
+    
     static var unauthorized: NetworkingError {
         self.init(statusCode: .unauthorized)
+    }
+    
+    static var notFound: NetworkingError {
+        self.init(statusCode: .notFound)
     }
 }
 
@@ -45,5 +55,8 @@ extension NetworkingError {
     }
     var isCancelled: Bool {
         underlyingError?._code == URLError.cancelled.rawValue
+    }
+    var isDecodingError: Bool {
+        underlyingError is DecodingError
     }
 }

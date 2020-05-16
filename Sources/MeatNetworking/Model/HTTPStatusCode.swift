@@ -274,7 +274,9 @@ public enum HTTPStatusCode: Int, Error {
         }
         
     }
-    
+    init?(error: Error) {
+        self.init(rawValue: error._code)
+    }
 }
 
 public extension HTTPURLResponse {
