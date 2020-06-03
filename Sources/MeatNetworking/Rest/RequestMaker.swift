@@ -35,8 +35,9 @@ public class RequestMaker {
                 return try request.configuration.decoder.decode(T.self, from: validatedSessionData)
             } catch {
                 print(error)
-                throw NetworkingError(underlyingError: error, data: validatedSessionData)
+                throw NetworkingError(underlyingError: error, data: validatedSessionData, statusCode: response.response?.status)
             }
+            
         } catch let error as NetworkingError {
             if request.logOutIfUnauthorized, error.isUnauthorized {
                 request.configuration.defaultUnathorizedAccessHandler?()

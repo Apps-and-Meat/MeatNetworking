@@ -34,9 +34,9 @@ public struct NetworkingError: Error {
         self.data = nil
     }
     
-    init(underlyingError: Error, data: Data?) {
+    init(underlyingError: Error, data: Data?, statusCode: HTTPStatusCode?) {
         self.underlyingError = underlyingError
-        self.statusCode = nil
+        self.statusCode = statusCode
         self.data = data
     }
     
