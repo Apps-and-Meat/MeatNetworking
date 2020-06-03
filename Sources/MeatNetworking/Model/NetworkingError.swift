@@ -7,13 +7,13 @@
 
 import Foundation
 
-struct NetworkingError: Error {
+public struct NetworkingError: Error {
     
-    let underlyingError: Error?
-    let statusCode: HTTPStatusCode?
-    let data: Data?
+    public let underlyingError: Error?
+    public let statusCode: HTTPStatusCode?
+    public let data: Data?
     
-    init?(error: Error?, response: HTTPURLResponse?, data: Data?) {
+    init?(error: Error?, response: HTTPURLResponse?, data: Data? = nil) {
         self.underlyingError = error
         self.statusCode = response?.status
         self.data = data
@@ -38,6 +38,10 @@ struct NetworkingError: Error {
         self.underlyingError = underlyingError
         self.statusCode = nil
         self.data = data
+    }
+    
+    static var badRequest: NetworkingError {
+        self.init(statusCode: .badRequest)
     }
     
     static var unauthorized: NetworkingError {

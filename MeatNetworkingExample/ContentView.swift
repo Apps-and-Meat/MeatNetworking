@@ -9,7 +9,7 @@ import SwiftUI
 
 struct ContentView: View {
     @State var breedList: [String] = []
-    @State var error: Error? {
+    @State var error: DogApiError? {
         didSet { self.hasError = error != nil }
     }
     @State var hasError = false
@@ -36,8 +36,10 @@ struct ContentView: View {
             do {
                 let breedsReponseModel = try response()
                 self.breedList = breedsReponseModel.breedNames
-            } catch {
+            } catch let error as DogApiError {
                 self.error = error
+            } catch {
+                print("something is very wrong")
             }
             
         }
