@@ -22,13 +22,13 @@ public extension JSONEncoder {
     func encodeToParams<T>(_ value: T) throws -> Parameters where T : Encodable {
         do {
             let jsonData = try encode(value)
-            if let params = try JSONSerialization.jsonObject(with: jsonData, options: .allowFragments) as? Parameters {
+            if let params = try JSONSerialization.jsonObject(with: jsonData) as? Parameters {
                 return params
             }
         } catch {
             throw error
         }
-        throw FutureError.noData
+        throw NetworkingError.badRequest
     }
 }
 
