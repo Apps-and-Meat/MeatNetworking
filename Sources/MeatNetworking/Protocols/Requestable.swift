@@ -40,3 +40,48 @@ public extension Requestable {
         return try RequestMaker.performRequest(request: self)
     }
 }
+
+extension Requestable {
+    
+    func build() throws ->  URLRequest {
+        
+        guard var url = URL(string: configuration.baseURL)?
+            .appendingPathComponent(path.toString)
+            .appendingQueryParameters(configuration.defaultQueryParameters)
+            else {
+                throw NetworkingError.badRequest
+        }
+        
+        if method.shouldAppendQueryString() {
+            url.appendQueryParameters(parameters)
+        }
+        
+        var urlRequest = URLRequest(url: url)
+        
+        if case .none = authentication, path.requiresAuthentication {
+            throw NetworkingError.unauthorized
+        }
+        
+        // HTTP Method
+        urlRequest.addAuthentication(authentication)
+        urlRequest.httpMethod = method.rawValue
+        
+        // Headers
+        headerFields.allFields.forEach {
+            urlRequest.setValue($0.value, forHTTPHeaderField: $0.key)
+        }
+        
+        
+        if let parameters = parameters, method.shouldAddHTTPBody() {
+            // Parameters
+            switch headerFields.contentType {
+            case .json:
+                urlRequest.httpBody = try JSONSerialization.data(withJSONObject: parameters, options: [])
+            case .form:
+                urlRequest.httpBody = parameters.percentEscaped().data(using: .utf8)
+            }
+        }
+        
+        return urlRequest
+    }
+}

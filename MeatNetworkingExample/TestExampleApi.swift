@@ -10,8 +10,34 @@ import UIKit
 import MeatNetworking
 import MeatFutures
 
+class DogApiError: Error, Decodable {
+    let status: String
+    let message: String
+    let code: Int
+    
+    init(code: Int) {
+        self.code = code
+        self.message = "Could not parse from Api"
+        self.status = "Something vierd"
+    }
+    
+    var localizedDescription: String {
+        "\(status), - \(message) code: \(code)"
+    }    
+}
+
 var apiClient: DogApiClient = {
-    let configuration = NetworkingConfiguration(baseURL: "https://dog.ceo/api")
+    var configuration = NetworkingConfiguration(baseURL: "https://dog.ceo/api")
+    configuration.errorMapping = { networkingError in
+        guard let data = networkingError.data else {
+            return DogApiError(code: networkingError.statusCode?.rawValue ?? 404)
+        }
+        do {
+            return try configuration.decoder.decode(DogApiError.self, from: data)
+        } catch {
+            return error
+        }
+    }
     return DogApiClient(configuration: configuration)
 }()
 
