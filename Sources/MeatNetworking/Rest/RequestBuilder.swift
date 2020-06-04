@@ -20,7 +20,7 @@ public protocol RequestableBuilder: Requestable {
 }
 
 open class RequestBuilder: RequestableBuilder {
-    
+
     public let configuration: NetworkingConfiguration
     public let createDate = Date().hashValue
     public var currentRequest: URLSessionDataTask?

@@ -8,7 +8,8 @@
 import Foundation
 import UIKit
 import MeatNetworking
-import MeatFutures
+//import MeatFutures
+import Combine
 
 class DogApiError: Error, Decodable {
     let status: String
@@ -60,7 +61,8 @@ class DogApiClient: APIClient {
         }
     }
     
-    func getBreedsList() -> Future<BreedsResponse> {
+    func getBreedsList() -> Future<BreedsResponse, NetworkingError> {
+        return Future
         return Future {
             try self.method(.get).path(Path.breedList).run(expecting: BreedsResponse.self)
         }

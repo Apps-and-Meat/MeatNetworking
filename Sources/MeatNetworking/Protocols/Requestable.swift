@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import Combine
 
 public typealias HTTPHeaderFields = [String: String?]
 public typealias Parameters = [String : Any]
@@ -22,22 +23,26 @@ public protocol Requestable {
     
     func setIsRunning(_ running: Bool)
 
-    func run() throws
-    func run<T: Decodable>(expecting: T.Type) throws -> T
+    func run() -> Future<VoidResult, NetworkingError>
+    func run<T: Decodable>(expecting: T.Type) -> Future<T, NetworkingError>
 }
 
 public extension Requestable {
 
-    func run() throws {
-        _ = try run(expecting: VoidResult.self)
+//    func run() throws {
+//        _ = try run(expecting: VoidResult.self)
+//    }
+    
+    func run() -> Future<VoidResult, NetworkingError> {
+        run(expecting: VoidResult.self)
     }
 
-    func run<T: Decodable>(expecting: T.Type) throws -> T {
-        return try RequestMaker.performRequest(request: self, expecting: expecting)
+    func run<T: Decodable>(expecting: T.Type) -> Future<T, NetworkingError> {
+        return RequestMaker.performRequest(request: self, expecting: expecting)
     }
     
-    func runRaw() throws -> (HTTPURLResponse?, Data?) {
-        return try RequestMaker.performRequest(request: self)
+    func runRaw() -> Future<(HTTPURLResponse?, Data?), NetworkingError> {
+        return RequestMaker.performRequest(request: self)
     }
 }
 
