@@ -7,13 +7,14 @@
 //
 
 import Foundation
+import MeatFutures
 
 public struct NetworkingConfiguration {
 
     public var baseURL: String
     public var defaultHeaderFields = HeaderFieldList()
     public var defaultQueryParameters: [URLQueryItem]
-    public var defaultUnathorizedAccessHandler: (() -> Void)?
+    public var defaultUnathorizedAccessHandler: UnathorizedAccessHandler?
     public var errorMapping: (NetworkingError) -> Error = { $0 }
 
     public var encoder: JSONEncoder = CoreEncoder()
@@ -22,11 +23,16 @@ public struct NetworkingConfiguration {
     public init(baseURL: String,
                 headerFields: HTTPHeaderFields = [:],
                 queryParameters: [URLQueryItem] = [],
-                defaultUnathorizedAccessHandler: (() -> Void)? = nil) {
+                defaultUnathorizedAccessHandler: UnathorizedAccessHandler? = nil) {
 
         self.baseURL = baseURL
         self.defaultHeaderFields.custom = headerFields
         self.defaultQueryParameters = queryParameters
         self.defaultUnathorizedAccessHandler = defaultUnathorizedAccessHandler
     }
+}
+
+public protocol UnathorizedAccessHandler {
+    func recover(retryCount: Int) -> Future<Bool>
+    func afterFailedRecover()
 }

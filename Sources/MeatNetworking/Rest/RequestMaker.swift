@@ -10,8 +10,9 @@ import Foundation
 
 public class RequestMaker {
     
-    static func performRequest<T: Decodable>(request: Requestable, expecting: T.Type) throws -> T {
+    static func performRequest<T: Decodable>(request: Requestable, expecting: T.Type, retryCount: Int = 0) throws -> T {
         do {
+            
             let response: (response: HTTPURLResponse?, data: Data?) = try self.performRequest(request: request)
             
             storeCookie(from: response.response)
@@ -39,9 +40,19 @@ public class RequestMaker {
             }
             
         } catch let error as NetworkingError {
-            if request.logOutIfUnauthorized, error.isUnauthorized {
-                request.configuration.defaultUnathorizedAccessHandler?()
+            if request.logOutIfUnauthorized, error.isUnauthorized, let unathorizedHandler = request.configuration.defaultUnathorizedAccessHandler {
+                    
+                do {
+                    let successfulRecover = (try? unathorizedHandler.recover(retryCount: retryCount).runSynchronous()) ?? false
+                    
+                    if successfulRecover {
+                        return try self.performRequest(request: request, expecting: expecting, retryCount: retryCount + 1)
+                    } else {
+                        unathorizedHandler.afterFailedRecover()
+                    }
+                }
             }
+            
             throw request.configuration.errorMapping(error)
         }
     }

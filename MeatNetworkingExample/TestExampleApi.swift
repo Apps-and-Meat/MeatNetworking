@@ -38,11 +38,36 @@ var apiClient: DogApiClient = {
             return error
         }
     }
+    
     return DogApiClient(configuration: configuration)
 }()
 
+extension DogApiClient: MeatNetworking.UnathorizedAccessHandler {
+    
+    static var maxRetryCount = 2
+    
+    func recover(retryCount: Int) -> Future<Bool> {
+        print("Recover try \(retryCount)")
+        guard retryCount < Self.maxRetryCount else {
+            return Future(result: { false } )
+        }
+        
+        print("Successful recover")
+        return Future { true }
+    }
+    
+    func afterFailedRecover() {
+        print("Failed recovery")
+    }
+}
+
 
 class DogApiClient: APIClient {
+    
+    override init(configuration: NetworkingConfiguration) {
+        super.init(configuration: configuration)
+        self.configuration.defaultUnathorizedAccessHandler = self
+    }
         
     enum Path: URLPath {
         case breedList
