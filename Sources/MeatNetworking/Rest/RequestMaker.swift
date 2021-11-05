@@ -8,12 +8,13 @@
 
 import Foundation
 
+@available(iOS 15.0.0, *)
 public class RequestMaker {
-    
-    static func performRequest<T: Decodable>(request: Requestable, expecting: T.Type, retryCount: Int = 0) throws -> T {
+        
+    static func performRequest<T: Decodable>(request: Requestable, expecting: T.Type, retryCount: Int = 0) async throws -> T {
         do {
             
-            let response: (response: HTTPURLResponse?, data: Data?) = try self.performRequest(request: request)
+            let response: (response: HTTPURLResponse?, data: Data?) = try await self.performRequest(request: request)
             
             storeCookie(from: response.response)
             
@@ -43,10 +44,10 @@ public class RequestMaker {
             if request.logOutIfUnauthorized, error.isUnauthorized, let unathorizedHandler = request.configuration.defaultUnathorizedAccessHandler {
                     
                 do {
-                    let successfulRecover = (try? unathorizedHandler.recover(retryCount: retryCount).runSynchronous()) ?? false
+                    let successfulRecover = (try? await unathorizedHandler.recover(retryCount: retryCount)) ?? false
                     
                     if successfulRecover {
-                        return try self.performRequest(request: request, expecting: expecting, retryCount: retryCount + 1)
+                        return try await self.performRequest(request: request, expecting: expecting, retryCount: retryCount + 1)
                     } else {
                         unathorizedHandler.afterFailedRecover()
                     }
@@ -57,7 +58,7 @@ public class RequestMaker {
         }
     }
     
-    public static func performRequest(request: Requestable) throws -> (HTTPURLResponse?, Data?) {
+    public static func performRequest(request: Requestable) async throws -> (HTTPURLResponse?, Data?) {
         var sessionData: Data?
         var sessionError: Error?
         var sessionResponse: HTTPURLResponse?

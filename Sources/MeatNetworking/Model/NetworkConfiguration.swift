@@ -7,8 +7,8 @@
 //
 
 import Foundation
-import MeatFutures
 
+@available(iOS 15.0.0, *)
 public struct NetworkingConfiguration {
 
     public var baseURL: String
@@ -32,7 +32,8 @@ public struct NetworkingConfiguration {
     }
 }
 
+@available(iOS 15.0.0, *)
 public protocol UnathorizedAccessHandler {
-    func recover(retryCount: Int) -> Future<Bool>
+    func recover(retryCount: Int) async throws -> Bool
     func afterFailedRecover()
 }

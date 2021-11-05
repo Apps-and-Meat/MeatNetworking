@@ -11,6 +11,7 @@ import Foundation
 public typealias HTTPHeaderFields = [String: String?]
 public typealias Parameters = [String : Any]
 
+@available(iOS 15.0.0, *)
 public protocol Requestable {
     var configuration: NetworkingConfiguration { get }
     var method: HTTPMethod { get }
@@ -22,25 +23,27 @@ public protocol Requestable {
     
     func setIsRunning(_ running: Bool)
 
-    func run() throws
-    func run<T: Decodable>(expecting: T.Type) throws -> T
+    func run() async throws
+    func run<T: Decodable>(expecting: T.Type) async throws -> T
 }
 
+@available(iOS 15.0.0, *)
 public extension Requestable {
 
-    func run() throws {
-        _ = try run(expecting: VoidResult.self)
+    func run() async throws {
+        _ = try await run(expecting: VoidResult.self)
     }
 
-    func run<T: Decodable>(expecting: T.Type) throws -> T {
-        return try RequestMaker.performRequest(request: self, expecting: expecting)
+    func run<T: Decodable>(expecting: T.Type) async throws -> T {
+        return try await RequestMaker.performRequest(request: self, expecting: expecting)
     }
     
-    func runRaw() throws -> (HTTPURLResponse?, Data?) {
-        return try RequestMaker.performRequest(request: self)
+    func runRaw() async throws -> (HTTPURLResponse?, Data?) {
+        return try await RequestMaker.performRequest(request: self)
     }
 }
 
+@available(iOS 15.0.0, *)
 extension Requestable {
     
     func build() throws ->  URLRequest {

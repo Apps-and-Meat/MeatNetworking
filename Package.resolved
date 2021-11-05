@@ -3,7 +3,7 @@
     "pins": [
       {
         "package": "MeatFutures",
-        "repositoryURL": "git@github.com:Apps-and-Meat/MeatFutures.git",
+        "repositoryURL": "https://github.com/Apps-and-Meat/MeatFutures.git",
         "state": {
           "branch": null,
           "revision": "14e3a6250edff1eb5f5694c13a24d38019d21f11",
