@@ -1,9 +1,11 @@
 # MeatNetworking
 
-Swift based Network Client.
+Network Client using async/await (Concurrency).
 
-- Using chainable/mergable/mappable futures
+- Async / Await handled network requests
 
 - Convenient support for Codable objects
 
-- Auth supported out of the box.
+- Auth2 supported out of the box.
+
+- Authentication and reAuthentication support
