@@ -64,3 +64,15 @@ extension NetworkingError {
         underlyingError is DecodingError
     }
 }
+
+extension NetworkingError: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        var dataString: String = "nil"
+        
+        if let data = data, let string = String(data: data, encoding: .utf8) {
+            dataString = string
+        }
+        
+        return "Network Error 🆘 StatusCode: \(String(describing: statusCode)) Error: \(String(describing: underlyingError)) data: \(dataString)"
+    }
+}

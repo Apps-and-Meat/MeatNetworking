@@ -8,7 +8,6 @@
 
 import Foundation
 
-@available(iOS 15.0.0, *)
 public protocol RequestableBuilder: Requestable {
     func method(_ method: HTTPMethod) -> RequestableBuilder
     func path(_ path: URLPath) -> RequestableBuilder
@@ -20,7 +19,6 @@ public protocol RequestableBuilder: Requestable {
     func disableAuthorizationLogout() -> RequestableBuilder
 }
 
-@available(iOS 15.0.0, *)
 open class RequestBuilder: RequestableBuilder {
     
     public let configuration: NetworkingConfiguration
