@@ -8,7 +8,6 @@
 
 import Foundation
 
-@available(iOS 15.0.0, *)
 public class RequestMaker {
         
     static func performRequest<T: Decodable>(request: Requestable, expecting: T.Type, retryCount: Int = 0) async throws -> T {

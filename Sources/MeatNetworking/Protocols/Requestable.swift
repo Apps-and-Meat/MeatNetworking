@@ -41,7 +41,6 @@ public extension Requestable {
     }
 }
 
-@available(iOS 15.0.0, *)
 extension Requestable {
     
     func build() throws ->  URLRequest {
