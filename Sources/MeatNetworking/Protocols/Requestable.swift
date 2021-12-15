@@ -11,7 +11,6 @@ import Foundation
 public typealias HTTPHeaderFields = [String: String?]
 public typealias Parameters = [String : Any]
 
-@available(iOS 15.0.0, *)
 public protocol Requestable {
     var configuration: NetworkingConfiguration { get }
     var method: HTTPMethod { get }
@@ -27,7 +26,6 @@ public protocol Requestable {
     func run<T: Decodable>(expecting: T.Type) async throws -> T
 }
 
-@available(iOS 15.0.0, *)
 public extension Requestable {
 
     func run() async throws {

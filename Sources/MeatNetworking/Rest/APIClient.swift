@@ -8,7 +8,6 @@
 
 import Foundation
 
-@available(iOS 15.0.0, *)
 open class APIClient {
     public var authentication: Authentication = .none
     public var configuration: NetworkingConfiguration
