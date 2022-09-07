@@ -28,29 +28,41 @@ final class DogAPITests: XCTestCase {
     override func setUp() {
         client = APIClient(configuration: .init(baseURL: "https://dog.ceo/api"))
     }
-    
+
+
+    private struct GetListRequest: Requestable {
+        typealias Payload = EmptyPayload
+        typealias Response = GetAllPayload
+        var path: String = "breeds/list/all"
+        var method: HTTPMethod = .get
+    }
+
     func testGetList() async throws {
-        let path = Path(requiresAuthentication: false, toString: "breeds/list/all")
-        let payload = try await client.method(.get).path(path).run(expecting: GetAllPayload.self)
+        let payload = try await client.run(GetListRequest())
         XCTAssertFalse(payload.message.isEmpty)
+    }
+
+    private struct AuthTestRequest: Requestable {
+        typealias Payload = EmptyPayload
+        typealias Response = GetAllPayload
+        var path: String = "breeds/list/all"
+        var method: HTTPMethod = .get
+        var requiresAuthentication: Bool = true
     }
     
     func testOAuth2Authentication() async throws {
-        let path = Path(requiresAuthentication: true, toString: "breeds/list/all")
         client.authentication = .OAuth2("FAKE")
-        _ = try await client.method(.get).path(path).run(expecting: GetAllPayload.self)
+        _ = try await client.run(AuthTestRequest())
    }
     
     func testCustomAuthentication() async throws {
-        let path = Path(requiresAuthentication: true, toString: "breeds/list/all")
         client.authentication = .custom(.init())
-        _ = try await client.method(.get).path(path).run(expecting: GetAllPayload.self)
+        _ = try await client.run(AuthTestRequest())
    }
     
     func testFailMissingAuthentication() async throws {
-        let path = Path(requiresAuthentication: true, toString: "breeds/list/all")
         do {
-            _ = try await client.method(.get).path(path).run(expecting: GetAllPayload.self)
+            _ = try await client.run(AuthTestRequest())
         } catch let error as NetworkingError {
             XCTAssertEqual(error.statusCode, .unauthorized)
         }

@@ -8,24 +8,18 @@
 
 import Foundation
 
-public extension Dictionary {
-    func union(_ dictionaries: Dictionary...) -> Dictionary {
-        var result = self
-        dictionaries.forEach { dictionary in
-            dictionary.forEach { key, value in
-                _ = result.updateValue(value, forKey: key)
-            }
-        }
-        return result
-    }
+public extension Encodable {
     
     func percentEscaped() -> String {
-        return map { (key, value) in
-            let escapedKey = "\(key)".addingPercentEncoding(withAllowedCharacters: .urlQueryValueAllowed) ?? ""
+        
+        let mirror = Mirror(reflecting: self)
+        
+        return mirror.children.compactMap { label, value in
+            guard let label = label else { return nil }
+            let escapedKey = "\(label)".addingPercentEncoding(withAllowedCharacters: .urlQueryValueAllowed) ?? ""
             let escapedValue = "\(value)".addingPercentEncoding(withAllowedCharacters: .urlQueryValueAllowed) ?? ""
             return escapedKey + "=" + escapedValue
-        }
-        .joined(separator: "&")
+        }.joined(separator: "&")
     }
 }
 

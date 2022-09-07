@@ -23,8 +23,13 @@ public extension URL {
 }
 
 public extension URL {
-    func appendingQueryParameters(_ parameters: Parameters?) -> URL {
-        let items = parameters?.map { URLQueryItem(name: $0, value: String(anyValue: $1)) }
+    func appendingQueryParameters(_ parameters: Encodable) -> URL {
+        let mirror = Mirror(reflecting: parameters)
+        let items: [URLQueryItem] = mirror.children.compactMap { label, value in
+            guard let label = label else { return nil }
+            return URLQueryItem(name: label, value: String(anyValue: value))
+        }
+        
         return appendingQueryParameters(items)
     }
 
@@ -38,7 +43,7 @@ public extension URL {
         return urlComponents.url!
     }
 
-    mutating func appendQueryParameters(_ parameters: Parameters?) {
+    mutating func appendQueryParameters(_ parameters: Encodable) {
         self = appendingQueryParameters(parameters)
     }
 

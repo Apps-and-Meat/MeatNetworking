@@ -8,7 +8,7 @@
 import Foundation
 
 extension URLRequest {
-    mutating func addAuthentication(_ auth: Authentication) {
+    mutating func addAuthentication(_ auth: Authentication?) {
         switch auth {
         case .custom(let headerFields):
             headerFields.forEach {

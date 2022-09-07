@@ -9,7 +9,6 @@
 import Foundation
 
 public enum Authentication {
-    case none
     case OAuth2(String)
     case custom(HTTPHeaderFields)
 }

@@ -11,77 +11,52 @@ import Foundation
 public typealias HTTPHeaderFields = [String: String?]
 public typealias Parameters = [String : Any]
 
+public struct EmptyResponse: Decodable, Equatable {
+    let statusCode: HTTPStatusCode?
+}
+
+public struct EmptyPayload: Encodable { }
+
 public protocol Requestable {
-    var configuration: NetworkingConfiguration { get }
+    associatedtype Payload: Encodable
+    associatedtype Response: Decodable
+    
+    var configuration: NetworkingConfiguration? { get }
     var method: HTTPMethod { get }
-    var path: URLPath { get }
-    var parameters: Parameters? { get }
-    var authentication: Authentication { get }
+    var path: String { get }
+    var parameters: Payload? { get }
+    var authentication: Authentication? { get }
     var headerFields: HeaderFieldList { get }
     var logOutIfUnauthorized: Bool { get }
-    
-    func setIsRunning(_ running: Bool)
+    var requiresAuthentication: Bool { get }
 
-    func run() async throws
-    func run<T: Decodable>(expecting: T.Type) async throws -> T
+    func run(configuration: NetworkingConfiguration?,
+             authentication: Authentication?,
+             retryCount: Int) async throws -> Response
+
+    func run(configuration: NetworkingConfiguration?,
+             retryCount: Int) async throws -> Response
+
+    func run(retryCount: Int) async throws -> Response
+
+    func run() async throws -> Response
 }
 
 public extension Requestable {
-
-    func run() async throws {
-        _ = try await run(expecting: VoidResult.self)
-    }
-
-    func run<T: Decodable>(expecting: T.Type) async throws -> T {
-        return try await RequestMaker.performRequest(request: self, expecting: expecting)
-    }
-    
-    func runRaw() async throws -> (HTTPURLResponse?, Data?) {
-        return try await RequestMaker.performRequest(request: self)
-    }
+    var headerFields: HeaderFieldList { .init() }
+    var logOutIfUnauthorized: Bool { false }
+    var requiresAuthentication: Bool { false }
+    var path: String { return "" }
+    var method: HTTPMethod { .get }
+    var authentication: Authentication? { nil }
+    var configuration: NetworkingConfiguration? { nil }
 }
 
-extension Requestable {
-    
-    func build() throws ->  URLRequest {
-        
-        guard var url = URL(string: configuration.baseURL)?
-            .appendingPathComponent(path.toString)
-            .appendingQueryParameters(configuration.defaultQueryParameters)
-            else {
-                throw NetworkingError.badRequest
-        }
-        
-        if method.shouldAppendQueryString() {
-            url.appendQueryParameters(parameters)
-        }
-        
-        var urlRequest = URLRequest(url: url)
-        
-        if case .none = authentication, path.requiresAuthentication {
-            throw NetworkingError.unauthorized
-        }
-        
-        // HTTP Method
-        urlRequest.addAuthentication(authentication)
-        urlRequest.httpMethod = method.rawValue
-        
-        // Headers
-        headerFields.allFields.forEach {
-            urlRequest.setValue($0.value, forHTTPHeaderField: $0.key)
-        }
-        
-        
-        if let parameters = parameters, method.shouldAddHTTPBody() {
-            // Parameters
-            switch headerFields.contentType {
-            case .json:
-                urlRequest.httpBody = try JSONSerialization.data(withJSONObject: parameters, options: [])
-            case .form:
-                urlRequest.httpBody = parameters.percentEscaped().data(using: .utf8)
-            }
-        }
-        
-        return urlRequest
-    }
+struct MyRequest: Requestable {
+    typealias Payload = EmptyPayload
+    typealias Response = [String]
+}
+
+extension Requestable where Payload == EmptyPayload {
+    var parameters: Payload? { nil }
 }

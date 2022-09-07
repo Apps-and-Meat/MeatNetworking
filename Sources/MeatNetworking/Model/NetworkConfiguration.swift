@@ -14,7 +14,7 @@ public struct NetworkingConfiguration {
     public var defaultHeaderFields = HeaderFieldList()
     public var defaultQueryParameters: [URLQueryItem]
     public var defaultUnathorizedAccessHandler: UnathorizedAccessHandler?
-    public var errorMapping: (NetworkingError) -> Error = { $0 }
+    public var errorMapping: ((NetworkingError) -> Error)?
 
     public var encoder: JSONEncoder = CoreEncoder()
     public var decoder: JSONDecoder = CoreDecoder()
