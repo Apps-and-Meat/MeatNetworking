@@ -15,34 +15,21 @@ public extension Requestable {
     }
 
     func run(retryCount: Int) async throws -> Response {
-        try await run(configuration: nil, retryCount: 0)
-    }
 
-    func run(configuration: NetworkingConfiguration?,
-             retryCount: Int) async throws -> Response {
-        try await run(configuration: configuration, authentication: nil, retryCount: 0)
-    }
-
-    func run(configuration: NetworkingConfiguration?,
-             authentication: Authentication?,
-             retryCount: Int) async throws -> Response {
-
-        let decoder = self.configuration?.decoder ?? configuration?.decoder ?? JSONDecoder()
-        let unathorizedHandler = self.configuration?.defaultUnathorizedAccessHandler ?? configuration?.defaultUnathorizedAccessHandler ?? nil
-        let errorMapping = self.configuration?.errorMapping ?? configuration?.errorMapping
+        let decoder = self.configuration?.decoder ?? JSONDecoder()
+        let unathorizedHandler = self.configuration?.defaultUnathorizedAccessHandler
+        let errorMapping = self.configuration?.errorMapping
 
         do {
 
-            let response: (response: HTTPURLResponse?, data: Data?)
-            = try await runRaw(configuration: configuration, authentication: authentication)
+            let response: (response: HTTPURLResponse?, data: Data?) = try await runRaw()
 
             Self.storeCookie(from: response.response)
 
             // If no data expected just return
-            let statusCode = response.response?.status
-
-            if let emptyReponse = EmptyResponse(statusCode: statusCode) as? Response {
-                return emptyReponse
+            if let urlResponse = response.response,
+                let rawResponse = RawResponse(httpUrlResponse: urlResponse, data: response.data) as? Response {
+                return rawResponse
             }
 
             // Check if we have any sessionData else throw nodata error
@@ -84,15 +71,21 @@ public extension Requestable {
         }
     }
 
-    func runRaw(configuration: NetworkingConfiguration?,
-                authentication: Authentication?) async throws -> (HTTPURLResponse?, Data) {
+    private func runRaw() async throws -> (HTTPURLResponse?, Data) {
 
-        let urlReq = try build(configuration: configuration,
-                               authentication: authentication)
+        let urlReq = try build()
 
-        let response = try await URLSession.shared.data(for: urlReq)
+        let response: (Data, HTTPURLResponse?) = try await withCheckedThrowingContinuation { continuation in
+            URLSession.shared.dataTask(with: urlReq) { data, response, error in
+                if let error = error {
+                    continuation.resume(throwing: error)
+                } else {
+                    continuation.resume(returning: (data ?? Data(), response as? HTTPURLResponse))
+                }
+            }.resume()
+        }
         let sessionData = response.0
-        let sessionResponse = response.1 as? HTTPURLResponse
+        let sessionResponse = response.1
 
         if let networkError = NetworkingError(error: nil, response: sessionResponse, data: sessionData) {
             throw networkError
@@ -102,7 +95,7 @@ public extension Requestable {
     }
 
     private static func storeCookie(from response: HTTPURLResponse?) {
-        guard   let url = response?.url,
+        guard let url = response?.url,
             let headerFields = response?.allHeaderFields as? [String : String] else {
                 return
         }
@@ -112,10 +105,9 @@ public extension Requestable {
         }
     }
 
-    func build(configuration: NetworkingConfiguration?,
-               authentication: Authentication?) throws ->  URLRequest {
+    func build() throws ->  URLRequest {
 
-        guard let configuration = self.configuration ?? configuration else {
+        guard let configuration = self.configuration else {
             throw NetworkingError.badRequest
         }
 
@@ -132,7 +124,7 @@ public extension Requestable {
 
         var urlRequest = URLRequest(url: url)
 
-        if case .none = authentication, requiresAuthentication {
+        if authentication == nil && requiresAuthentication {
             throw NetworkingError.unauthorized
         }
 
@@ -141,7 +133,7 @@ public extension Requestable {
         urlRequest.httpMethod = method.rawValue
 
         // Headers
-        headerFields.allFields.forEach {
+        configuration.defaultHeaderFields.allFields.appending(headers: headerFields.allFields).forEach {
             urlRequest.setValue($0.value, forHTTPHeaderField: $0.key)
         }
 

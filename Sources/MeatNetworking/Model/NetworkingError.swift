@@ -65,7 +65,8 @@ extension NetworkingError {
     }
 }
 
-extension NetworkingError: CustomDebugStringConvertible {
+extension NetworkingError: CustomDebugStringConvertible, CustomStringConvertible {
+
     public var debugDescription: String {
         var dataString: String = "nil"
         
@@ -74,5 +75,9 @@ extension NetworkingError: CustomDebugStringConvertible {
         }
         
         return "Network Error 🆘 StatusCode: \(String(describing: statusCode)) Error: \(String(describing: underlyingError)) data: \(dataString)"
+    }
+
+    public var description: String {
+        debugDescription
     }
 }

@@ -24,6 +24,16 @@ public struct HeaderFieldList {
         }
         return values
     }
+
+
+}
+
+extension HTTPHeaderFields {
+    public func appending(headers: HTTPHeaderFields) -> HTTPHeaderFields {
+        merging(headers) { old, new in
+            return new
+        }
+    }
 }
 
 public enum DataType: String, Codable {

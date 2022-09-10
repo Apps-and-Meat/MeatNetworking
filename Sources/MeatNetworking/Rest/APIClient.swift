@@ -9,15 +9,18 @@
 import Foundation
 
 open class APIClient {
-    public var authentication: Authentication? = nil
+    public var authentication: Authentication?
     public var configuration: NetworkingConfiguration
     
-    public init(configuration: NetworkingConfiguration) {
+    public init(configuration: NetworkingConfiguration, authentication: Authentication? = nil) {
         self.configuration = configuration
+        self.authentication = authentication
     }
 
-    func run<Request: Requestable>(_ request: Request) async throws -> Request.Response {
-        return try await request.run(configuration: configuration,
-                                     authentication: authentication, retryCount: 0)
+    public func run<Request: Requestable>(_ request: Request) async throws -> Request.Response {
+        try await request
+            .appendingConfiguration(configuration)
+            .appendingAuthentication(authentication)
+            .run()
     }
 }
