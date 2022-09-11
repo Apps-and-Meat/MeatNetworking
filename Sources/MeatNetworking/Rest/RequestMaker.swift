@@ -119,7 +119,7 @@ public extension Requestable {
         }
 
         if method.shouldAppendQueryString() {
-            url.appendQueryParameters(parameters)
+            url.appendQueryParameters(self.queryParameters)
         }
 
         var urlRequest = URLRequest(url: url)
@@ -148,5 +148,17 @@ public extension Requestable {
         }
 
         return urlRequest
+    }
+
+    var queryParameters: [URLQueryItem] {
+        guard let parameters = parameters else {
+            return []
+        }
+        
+        return Mirror(reflecting: parameters).children.compactMap { label, value in
+            guard let label = label else { return nil }
+            
+            return URLQueryItem(name: label, value: String(anyValue: value))
+        }
     }
 }

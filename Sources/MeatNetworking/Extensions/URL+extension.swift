@@ -23,15 +23,6 @@ public extension URL {
 }
 
 public extension URL {
-    func appendingQueryParameters(_ parameters: Encodable) -> URL {
-        let mirror = Mirror(reflecting: parameters)
-        let items: [URLQueryItem] = mirror.children.compactMap { label, value in
-            guard let label = label else { return nil }
-            return URLQueryItem(name: label, value: String(anyValue: value))
-        }
-        
-        return appendingQueryParameters(items)
-    }
 
     func appendingQueryParameters(_ parameters: [URLQueryItem]?) -> URL {
         guard let parameters = parameters, !parameters.isEmpty else { return self }
@@ -41,10 +32,6 @@ public extension URL {
         urlComponents.queryItems = items
         urlComponents.percentEncodedQuery = urlComponents.percentEncodedQuery?.replacingOccurrences(of: "+", with: "%2B")
         return urlComponents.url!
-    }
-
-    mutating func appendQueryParameters(_ parameters: Encodable) {
-        self = appendingQueryParameters(parameters)
     }
 
     mutating func appendQueryParameters(_ parameters: [URLQueryItem]?) {
