@@ -154,11 +154,15 @@ public extension Requestable {
         guard let parameters = parameters else {
             return []
         }
-        
-        return Mirror(reflecting: parameters).children.compactMap { label, value in
-            guard let label = label else { return nil }
-            
-            return URLQueryItem(name: label, value: String(anyValue: value))
+
+        let encoder = self.configuration?.encoder ?? JSONEncoder()
+
+        do {
+            return try encoder.encodeToParams(parameters).compactMap { key, value in
+                URLQueryItem(name: key, value: String(anyValue: value))
+            }
+        } catch {
+            return []
         }
     }
 }
